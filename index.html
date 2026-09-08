@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>きょうの できた！手帳</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&family=Zen+Maru+Gothic:wght@400;500;700&display=swap');
+
+    :root { --ink:#5b4544; --paper:#fffaf2; --pink:#ff8fac; --pink-soft:#ffe2ea; --yellow:#ffd95f; --orange:#ffae68; --blue:#9bdcf1; --mint:#bce8ce; --line:#efdccf; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; color:var(--ink); font-family:"Zen Maru Gothic", sans-serif; background:linear-gradient(130deg,#ffecb4 0%,#ffebef 48%,#d8f3fa 100%); }
+    body::before, body::after { content:""; position:fixed; border-radius:50%; pointer-events:none; opacity:.56; filter:blur(1px); }
+    body::before { width:230px; height:230px; background:#f9b9d1; top:-82px; right:-58px; }
+    body::after { width:180px; height:180px; background:#b9eaf7; bottom:-65px; left:-45px; }
+    button, input { font:inherit; }
+    button { cursor:pointer; }
+    .app { width:min(100% - 32px, 1120px); margin:0 auto; padding:32px 0 50px; position:relative; z-index:1; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; padding:0 8px; }
+    .brand { display:flex; align-items:center; gap:12px; font-family:"Kiwi Maru", serif; font-weight:500; font-size:18px; letter-spacing:.04em; }
+    .brand-mark { width:42px; height:42px; border-radius:15px 15px 15px 5px; display:grid; place-items:center; background:var(--pink); color:white; font-size:23px; transform:rotate(-5deg); box-shadow:3px 4px 0 #e77194; }
+    .day-chip { padding:9px 14px; background:#fff9; border:1px solid #fff; border-radius:99px; font-size:13px; font-weight:700; }
+    .diary { background:var(--paper); border-radius:31px; padding:clamp(20px, 4vw, 46px); box-shadow:0 18px 45px #9b6c6b35; overflow:hidden; position:relative; }
+    .diary::before { content:""; position:absolute; inset:0 auto 0 35px; border-left:2px solid #ffbecd8a; }
+    .hero { padding-left:20px; position:relative; }
+    .hero::after { content:""; display:block; width:100%; border-bottom:2px dashed #f4d8d1; margin-top:24px; }
+    .eyebrow { font-size:13px; color:#d47288; letter-spacing:.08em; font-weight:700; }
+    h1 { margin:6px 0 4px; font-family:"Kiwi Maru", serif; font-size:clamp(29px, 5vw, 48px); line-height:1.28; letter-spacing:.04em; }
+    .hero p { margin:0; font-size:14px; }
+    .flower { position:absolute; right:12px; top:-2px; font-size:54px; transform:rotate(14deg); }
+    .boards { display:grid; grid-template-columns:1.1fr .9fr; grid-template-areas:"today done" "tomorrow tomorrow"; gap:25px; margin-top:30px; padding-left:20px; }
+    .column { min-width:0; }
+    .today { grid-area:today; }
+    .done { grid-area:done; }
+    .tomorrow { grid-area:tomorrow; grid-column:1 / -1; }
+    .section-title { display:flex; align-items:center; gap:10px; margin:0 0 13px; font-family:"Kiwi Maru",serif; font-size:22px; }
+    .section-title .dot { width:13px; height:13px; flex:none; border-radius:50%; }
+    .today .dot { background:var(--pink); box-shadow:3px 3px 0 #ffd3df; }
+    .tomorrow .dot { background:var(--blue); box-shadow:3px 3px 0 #d6f3fb; }
+    .done .dot { background:var(--yellow); box-shadow:3px 3px 0 #ffeab1; }
+    .task-board { border-radius:23px; padding:15px; position:relative; }
+    .today .task-board { background:var(--pink-soft); }
+    .tomorrow .task-board { background:#def4fb; }
+    .done .task-board { background:#fff3be; min-height:125px; }
+    .task-list { list-style:none; margin:0; padding:0; display:grid; gap:8px; }
+    .task { display:flex; align-items:center; gap:10px; background:#fffc; border-radius:14px; min-height:53px; padding:8px 11px; box-shadow:0 2px 0 #ffffffa6; animation:arrive .25s ease-out; }
+    @keyframes arrive { from{opacity:0; transform:translateY(-7px)} to{opacity:1; transform:none} }
+    .task label { display:flex; gap:10px; align-items:center; flex:1; min-width:0; cursor:pointer; font-size:14px; font-weight:500; }
+    .task input[type="checkbox"] { appearance:none; width:22px; height:22px; border:2px solid #ef8ba2; border-radius:8px; background:white; flex:none; margin:0; display:grid; place-content:center; }
+    .task input[type="checkbox"]::before { content:"✓"; color:white; font-size:16px; font-weight:700; transform:scale(0); transition:transform .15s; }
+    .task input[type="checkbox"]:checked { background:var(--pink); border-color:var(--pink); }
+    .task input[type="checkbox"]:checked::before { transform:scale(1); }
+    .task-text { overflow-wrap:anywhere; }
+    .delete { width:28px; height:28px; color:#bb9290; border:0; background:transparent; border-radius:50%; font-size:19px; line-height:1; opacity:.65; }
+    .delete:hover { background:#f7d7d5; opacity:1; }
+    .add-wrap { margin-top:10px; }
+    .add-button { border:0; padding:10px 13px; border-radius:13px; color:#a34b64; background:#fff; font-size:13px; font-weight:700; box-shadow:0 2px 0 #f1bbc8; }
+    .tomorrow .add-button { color:#428ba6; box-shadow:0 2px 0 #addbea; }
+    .add-form { display:none; gap:7px; margin-top:10px; }
+    .add-form.is-open { display:flex; }
+    .add-form input { min-width:0; flex:1; padding:10px 12px; border:2px solid #f4c6d2; border-radius:12px; outline:none; color:var(--ink); background:#fffefa; }
+    .tomorrow .add-form input { border-color:#bde5f2; }
+    .add-form input:focus { box-shadow:0 0 0 3px #f8c2d155; }
+    .add-submit { border:0; border-radius:12px; padding:7px 11px; color:white; background:var(--pink); font-weight:700; }
+    .tomorrow .add-submit { background:#65c3df; }
+    .done { margin:0; padding:0; }
+    .done-header { display:flex; justify-content:space-between; align-items:baseline; }
+    .count { color:#b49354; font-size:12px; font-weight:700; }
+    .done .task { background:#fffdf5; }
+    .done .task label { color:#8a7753; text-decoration:line-through; }
+    .empty { padding:12px 8px 4px; color:#a58d82; font-size:13px; text-align:center; }
+    .hint { margin:22px 0 0 20px; padding:13px 16px; background:#eef9e9; border-radius:15px; color:#568367; font-size:13px; }
+    .toast { position:fixed; z-index:10; left:50%; top:24px; transform:translate(-50%,-140%); width:min(420px, calc(100% - 32px)); padding:15px 18px; border-radius:18px; background:#ff7299; color:#fff; box-shadow:0 10px 24px #b7476c55; text-align:center; font-family:"Kiwi Maru",serif; font-size:16px; transition:transform .38s cubic-bezier(.2,1.4,.4,1); }
+    .toast.show { transform:translate(-50%,0); }
+    .spark { position:absolute; font-size:22px; animation:float 1.3s ease-out forwards; pointer-events:none; }
+    @keyframes float { from{opacity:1; transform:translate(0,0) rotate(0)} to{opacity:0; transform:translate(var(--x),-105px) rotate(30deg)} }
+    @media (max-width:720px) { .app{width:min(100% - 20px,600px);padding-top:16px}.diary{border-radius:24px;padding:23px 16px}.diary::before{left:19px}.boards{grid-template-columns:1fr;grid-template-areas:"today" "done" "tomorrow";gap:25px;padding-left:10px}.tomorrow{grid-column:auto}.hero,.hint{margin-left:0;padding-left:10px}.flower{font-size:42px}.topbar{padding:0}.section-title{font-size:20px} }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar"><div class="brand"><span class="brand-mark">✓</span><span>できた！手帳</span></div><div class="day-chip" id="dateLabel"></div></header>
+    <section class="diary" aria-label="今日のやること手帳">
+      <header class="hero"><div class="eyebrow">TODAY'S LITTLE WINS</div><h1>きょうも、いい一日にしよう。</h1><p>小さな「できた」を、ひとつずつ集めようね。</p><span class="flower" aria-hidden="true">🌼</span></header>
+      <div class="boards">
+        <section class="column today" aria-labelledby="today-title"><h2 class="section-title" id="today-title"><span class="dot"></span>今日やること</h2><div class="task-board"><ul class="task-list" id="todayList"></ul><div class="add-wrap"><button class="add-button" data-add="today" type="button">＋ やることを追加</button><form class="add-form" data-form="today"><input aria-label="今日のやること" maxlength="80" placeholder="たとえば、お花に水をあげる" required /><button class="add-submit" type="submit">追加</button></form></div></div></section>
+        <section class="done" aria-labelledby="done-title"><div class="done-header"><h2 class="section-title" id="done-title"><span class="dot"></span>今日できたこと</h2><span class="count" id="doneCount">0 できた！</span></div><div class="task-board"><ul class="task-list" id="doneList"></ul><p class="empty" id="doneEmpty">できたことが、ここに咲いていくよ 🌷</p></div></section>
+        <section class="column tomorrow" aria-labelledby="tomorrow-title"><h2 class="section-title" id="tomorrow-title"><span class="dot"></span>明日やること</h2><div class="task-board"><ul class="task-list" id="tomorrowList"></ul><div class="add-wrap"><button class="add-button" data-add="tomorrow" type="button">＋ 明日の予定を追加</button><form class="add-form" data-form="tomorrow"><input aria-label="明日やること" maxlength="80" placeholder="明日の自分へのメモ" required /><button class="add-submit" type="submit">追加</button></form></div></div></section>
+      </div>
+      <p class="hint">💡 明日のリストは、次に開いた日の「今日やること」に自動で引き継がれます。</p>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    const KEY = 'dekita-diary-v1';
+    const todayKey = () => new Date().toISOString().slice(0,10);
+    const nextDay = (date) => { const d = new Date(date + 'T00:00:00'); d.setDate(d.getDate()+1); return d.toISOString().slice(0,10); };
+    const initial = { today: [], tomorrow: [], done: [], date: todayKey() };
+    let state;
+    try { state = { ...initial, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { state = initial; }
+    function rollOver() {
+      const now = todayKey();
+      if (state.date !== now) {
+        const carried = state.tomorrow.filter(t => t.forDate <= now).map(t => ({ id: crypto.randomUUID(), text:t.text }));
+        state.today = [...carried, ...state.today]; state.tomorrow = state.tomorrow.filter(t => t.forDate > now); state.done = []; state.date = now; save();
+      }
+    }
+    function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+    function taskRow(task, area) {
+      const li = document.createElement('li'); li.className = 'task';
+      const label = document.createElement('label');
+      if(area === 'done') { label.innerHTML = '<input type="checkbox" checked aria-label="完了" disabled><span class="task-text"></span>'; }
+      else { label.innerHTML = '<input type="checkbox" aria-label="完了にする"><span class="task-text"></span>'; label.querySelector('input').addEventListener('change', () => complete(task.id)); }
+      label.querySelector('.task-text').textContent = task.text;
+      const del = document.createElement('button'); del.className='delete'; del.type='button'; del.setAttribute('aria-label','削除'); del.textContent='×'; del.onclick=()=>remove(task.id,area);
+      li.append(label,del); return li;
+    }
+    function render() {
+      document.getElementById('dateLabel').textContent = new Intl.DateTimeFormat('ja-JP',{month:'long',day:'numeric',weekday:'short'}).format(new Date());
+      [['today','todayList'],['tomorrow','tomorrowList'],['done','doneList']].forEach(([area,id]) => { const list=document.getElementById(id); list.replaceChildren(...state[area].map(t=>taskRow(t,area))); });
+      document.getElementById('doneCount').textContent = `${state.done.length} できた！`;
+      document.getElementById('doneEmpty').hidden = state.done.length > 0;
+    }
+    function add(area,text) { const task={id:crypto.randomUUID(),text:text.trim()}; if(area==='tomorrow') task.forDate=nextDay(todayKey()); state[area].push(task); save(); render(); }
+    function remove(id,area) { state[area] = state[area].filter(t=>t.id!==id); save(); render(); }
+    function complete(id) { const task=state.today.find(t=>t.id===id); if(!task)return; state.today=state.today.filter(t=>t.id!==id); state.done.unshift(task); save(); render(); celebrate(); }
+    function celebrate() { const words=['すごい！えらい！','できたね、最高！','その調子、その調子！','今日のあなた、100点！']; const toast=document.getElementById('toast'); toast.textContent='🎉 '+words[Math.floor(Math.random()*words.length)]; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),2600); ['✨','🌼','💛','🎈'].forEach((icon,i)=>{const s=document.createElement('span');s.className='spark';s.textContent=icon;s.style.left=`${42+i*7}%`;s.style.top='75px';s.style.setProperty('--x',`${(i-1.5)*35}px`);document.body.append(s);setTimeout(()=>s.remove(),1400);}); }
+    document.querySelectorAll('[data-add]').forEach(btn=>btn.addEventListener('click',()=>{const form=document.querySelector(`[data-form="${btn.dataset.add}"]`);form.classList.toggle('is-open');if(form.classList.contains('is-open'))form.querySelector('input').focus();}));
+    document.querySelectorAll('.add-form').forEach(form=>form.addEventListener('submit',e=>{e.preventDefault();const input=form.querySelector('input');add(form.dataset.form,input.value);input.value='';form.classList.remove('is-open');}));
+    rollOver(); render();
+  </script>
+</body>
+</html>
