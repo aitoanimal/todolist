@@ -26,7 +26,7 @@ h1{margin:5px 0;font-family:"Kiwi Maru",serif;font-size:clamp(28px,5vw,46px)}.he
 .task-board{background:var(--pink-soft);border-radius:23px;padding:15px}.task-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}.task{display:flex;align-items:center;gap:10px;background:#fffc;border-radius:14px;min-height:53px;padding:8px 11px;box-shadow:0 2px 0 #ffffffa6}
 .task label{display:flex;gap:10px;align-items:center;flex:1;cursor:pointer;font-size:14px;font-weight:500}.task input{appearance:none;width:22px;height:22px;border:2px solid #ef8ba2;border-radius:8px;background:#fff;display:grid;place-content:center;flex:none}
 .task input:before{content:"✓";color:#fff;font-size:16px;font-weight:700;transform:scale(0);transition:.15s}.task input:checked{background:var(--pink);border-color:var(--pink)}.task input:checked:before{transform:scale(1)}
-.task input:checked + .task-text{text-decoration:line-through;color:#9c8580}.task-text{overflow-wrap:anywhere}.completed-area{margin-top:22px}.completed-board{background:#fff3be}.done-task label{color:#8a7753}.delete{width:30px;height:30px;border:0;background:transparent;color:#bb9290;border-radius:50%;font-size:19px}.delete:hover{background:#f7d7d5}
+.task input:checked + .task-text{text-decoration:line-through;color:#9c8580}.task-text{overflow-wrap:anywhere}.delete{width:30px;height:30px;border:0;background:transparent;color:#bb9290;border-radius:50%;font-size:19px}.delete:hover{background:#f7d7d5}
 .add-wrap{display:flex;gap:8px;margin-top:10px}.add-button{border:0;padding:10px 13px;border-radius:13px;color:#a34b64;background:#fff;font-size:13px;font-weight:700;box-shadow:0 2px 0 #f1bbc8}
 .add-form{display:none;flex:1;gap:7px}.add-form.open{display:flex}.add-form input{min-width:0;flex:1;padding:10px 12px;border:2px solid #f4c6d2;border-radius:12px;outline:none;color:var(--ink)}.add-submit{border:0;border-radius:12px;padding:7px 14px;color:#fff;background:var(--pink);font-weight:700}
 .week-view{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:24px}.mini-day{background:#fff;border-radius:19px;padding:13px}.mini-day h3{margin:0 0 8px;font-family:"Kiwi Maru",serif;font-size:16px}.mini-count{font-size:11px;color:#8d7770;margin-bottom:8px}.mini-list{display:grid;gap:6px}.mini-item{font-size:11px;background:#fff6f8;border-radius:10px;padding:7px}.mini-item.done{text-decoration:line-through;opacity:.55}.empty{font-size:11px;color:#a58d82}
@@ -40,8 +40,8 @@ h1{margin:5px 0;font-family:"Kiwi Maru",serif;font-size:clamp(28px,5vw,46px)}.he
 <main class="app">
 <header class="topbar"><div class="brand"><span class="brand-mark">✓</span><span>できた！5日間手帳</span></div><div class="week-label" id="weekLabel"></div></header>
 <section class="diary">
-<header class="hero"><div class="eyebrow">MONDAY → FRIDAY</div><h1>5日間、いい一週間にしよう。</h1><p>毎日の小さな「できた」を、ひとつずつ集めようね。</p><span class="flower">🌼</span></header>
-<nav class="week-nav" id="dayTabs" aria-label="曜日選択"></nav>
+<header class="hero"><div class="eyebrow">MONDAY → FRIDAY</div><h1>今週のToDoスケジュール</h1><p>毎日の小さな「できた」を、ひとつずつ集めようね。</p><span class="flower">🌼</span></header>
+
 <section class="summary" id="summary"></section>
 <section class="task-area">
 <div class="day-title"><h2 id="dayTitle"></h2><span class="progress" id="progressText"></span></div>
@@ -61,46 +61,19 @@ const dayShort=['月','火','水','木','金'];
 const defaults={月曜日:['朝の予定を確認する','メール・連絡を確認する','今日の最優先タスクに取り組む'],火曜日:['昨日の振り返りをする','重要な作業を1つ終わらせる','明日の準備をする'],水曜日:['週の進み具合を確認する','資料やデータを整理する','休憩をしっかり取る'],木曜日:['残っているタスクを確認する','集中して作業する','金曜日の準備をする'],金曜日:['今週のToDoを振り返る','未完了のタスクを整理する','来週の予定をメモする']};
 let state;
 try{state=JSON.parse(localStorage.getItem(KEY))||null}catch(e){}
-if(!state) state={days:Object.fromEntries(dayNames.map(d=>[d,{tasks:defaults[d].map(text=>({id:crypto.randomUUID(),text})),done:[]}]))};
-else state.days=Object.fromEntries(dayNames.map(d=>{
-  const v=state.days?.[d]||[];
-  return [d,Array.isArray(v)?{tasks:v.filter(x=>!x.done),done:v.filter(x=>x.done).map(x=>({id:x.id||crypto.randomUUID(),text:x.text}))}:{tasks:v.tasks||[],done:v.done||[]}];
-}));
+if(!state) state={days:Object.fromEntries(dayNames.map(d=>[d,defaults[d].map((text,i)=>({id:crypto.randomUUID(),text,done:false}))]))};
 let selected=new Date().getDay(); selected=selected===0?0:selected===6?4:selected-1;
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function currentDay(){return dayNames[selected]}
 function renderTabs(){document.getElementById('dayTabs').innerHTML=dayNames.map((d,i)=>`<button class="day-tab ${i===selected?'active':''}" data-i="${i}">${dayShort[i]}曜日<span class="small">${state.days[d].filter(x=>x.done).length}/${state.days[d].length} 完了</span></button>`).join('')}
-function renderSummary(){document.getElementById('summary').innerHTML=dayNames.map(d=>`<div class="summary-card"><strong>${d.replace('曜日','')}</strong><span>曜日</span></div>`).join('')}
-function renderTasks(){
-  let d=currentDay(),data=state.days[d],tasks=data.tasks,done=data.done;
-  document.getElementById('dayTitle').textContent=d+'のToDo';
-  document.getElementById('progressText').textContent=`${tasks.length}件`;
-  document.getElementById('progressBar').style.width=(tasks.length?'100%':'0%');document.getElementById('doneCount').textContent=`${done.length}件できた！`;
-  document.getElementById('taskList').innerHTML=tasks.map(t=>`<li class="task"><label><input type="checkbox" data-id="${t.id}"><span class="task-text">${escapeHtml(t.text)}</span></label><button class="delete" data-del="${t.id}" aria-label="削除">×</button></li>`).join('')||'<li class="empty">この日のToDoはまだありません。追加してみよう 🌷</li>';
-  document.getElementById('doneList').innerHTML=done.map(t=>`<li class="task done-task"><label><input type="checkbox" checked disabled><span class="task-text">${escapeHtml(t.text)}</span></label><button class="delete" data-done-del="${t.id}" aria-label="削除">×</button></li>`).join('')||'<li class="empty">できたことが、ここに咲いていくよ 🌷</li>';
-}
-function renderWeek(){document.getElementById('weekView').innerHTML=dayNames.map(d=>{let data=state.days[d];return `<div class="mini-day"><h3>${d}</h3><div class="mini-count">ToDo ${data.tasks.length}件・できた ${data.done.length}件</div><div class="mini-list">${data.tasks.slice(0,4).map(t=>`<div class="mini-item">${escapeHtml(t.text)}</div>`).join('')||'<div class="empty">ToDoなし</div>'}</div></div>`}).join('')}
+function renderSummary(){document.getElementById('summary').innerHTML=dayNames.map((d,i)=>{let a=state.days[d],done=a.filter(x=>x.done).length;return `<div class="summary-card"><strong>${done}/${a.length}</strong><span>${d}</span></div>`}).join('')}
+function renderTasks(){let d=currentDay(),tasks=state.days[d],done=tasks.filter(x=>x.done).length,pct=tasks.length?Math.round(done/tasks.length*100):0;document.getElementById('dayTitle').textContent=d+'のToDo';document.getElementById('progressText').textContent=`${done}/${tasks.length} できた！`;document.getElementById('progressBar').style.width=pct+'%';document.getElementById('taskList').innerHTML=tasks.map(t=>`<li class="task"><label><input type="checkbox" data-id="${t.id}" ${t.done?'checked':''}><span class="task-text">${escapeHtml(t.text)}</span></label><button class="delete" data-del="${t.id}" aria-label="削除">×</button></li>`).join('')||'<li class="empty">この日のToDoはまだありません。追加してみよう 🌷</li>'}
+function renderWeek(){document.getElementById('weekView').innerHTML=dayNames.map(d=>{let tasks=state.days[d];return `<div class="mini-day"><h3>${d}</h3><div class="mini-count">${tasks.filter(x=>x.done).length}/${tasks.length} 完了</div><div class="mini-list">${tasks.slice(0,6).map(t=>`<div class="mini-item ${t.done?'done':''}">${escapeHtml(t.text)}</div>`).join('')||'<div class="empty">ToDoなし</div>'}</div></div>`}).join('')}
 function render(){let now=new Date(),m=now.getMonth()+1;document.getElementById('weekLabel').textContent=`${m}月・月〜金`;renderTabs();renderSummary();renderTasks();renderWeek()}
 function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 document.getElementById('dayTabs').addEventListener('click',e=>{let b=e.target.closest('.day-tab');if(!b)return;selected=Number(b.dataset.i);render()});
-document.getElementById('taskList').addEventListener('change',e=>{
-  if(e.target.matches('input[type=checkbox]')){
-    let data=state.days[currentDay()],index=data.tasks.findIndex(x=>x.id===e.target.dataset.id);
-    if(index>=0){
-      let t=data.tasks.splice(index,1)[0];
-      data.done.unshift({id:t.id,text:t.text});
-      save();render();celebrate();
-    }
-  }
-});
-document.getElementById('taskList').addEventListener('click',e=>{
-  let id=e.target.dataset.del;
-  if(id){state.days[currentDay()].tasks=state.days[currentDay()].tasks.filter(x=>x.id!==id);save();render()}
-});
-document.getElementById('doneList').addEventListener('click',e=>{
-  let id=e.target.dataset.doneDel;
-  if(id){state.days[currentDay()].done=state.days[currentDay()].done.filter(x=>x.id!==id);save();render()}
-});
+document.getElementById('taskList').addEventListener('change',e=>{if(e.target.matches('input[type=checkbox]')){let t=state.days[currentDay()].find(x=>x.id===e.target.dataset.id);if(t){t.done=e.target.checked;save();render();if(t.done)celebrate()}}});
+document.getElementById('taskList').addEventListener('click',e=>{let id=e.target.dataset.del;if(id){state.days[currentDay()]=state.days[currentDay()].filter(x=>x.id!==id);save();render()}});
 document.getElementById('addButton').onclick=()=>{let f=document.getElementById('addForm');f.classList.toggle('open');if(f.classList.contains('open'))document.getElementById('taskInput').focus()};
 document.getElementById('addForm').onsubmit=e=>{e.preventDefault();let input=document.getElementById('taskInput'),text=input.value.trim();if(!text)return;state.days[currentDay()].push({id:crypto.randomUUID(),text,done:false});input.value='';e.target.classList.remove('open');save();render()};
 function celebrate(){let words=['すごい！えらい！','できたね、最高！','その調子、その調子！','今日のあなた、100点！'];let t=document.getElementById('toast');t.textContent='🎉 '+words[Math.floor(Math.random()*words.length)];t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
