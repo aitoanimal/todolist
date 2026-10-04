@@ -20,7 +20,7 @@ button,input{font:inherit}button{cursor:pointer}.app{width:min(100% - 24px,1200p
 h1{margin:5px 0;font-family:"Kiwi Maru",serif;font-size:clamp(28px,5vw,46px)}.hero p{margin:0;font-size:14px}.flower{position:absolute;right:10px;top:-3px;font-size:48px}
 .week-nav{display:flex;gap:8px;overflow:auto;padding:20px 0 4px}.day-tab{border:0;min-width:100px;padding:11px 13px;border-radius:16px;background:#fff;border:2px solid #f3dfd6;color:var(--ink);font-weight:700}
 .day-tab.active{background:var(--pink);color:#fff;border-color:var(--pink);box-shadow:0 3px 0 #df7795}.day-tab .small{display:block;font-size:11px;font-weight:500;opacity:.8;margin-top:3px}
-
+.function renderSummary(){document.getElementById('summary').innerHTML=dayNames.map((d,i)=>{let a=state.days[d],done=a.filter(x=>x.done).length;return `<div class="summary-card"><strong>${done}/${a.length}</strong><span>${d}</span></div>`}).join('')}
 .task-area{margin-top:22px}.day-title{display:flex;align-items:center;justify-content:space-between;gap:10px}.day-title h2{font-family:"Kiwi Maru",serif;font-size:25px;margin:0}.progress{font-size:12px;font-weight:700;color:#b49354}
 .progressbar{height:9px;background:#f2e5df;border-radius:99px;overflow:hidden;margin:10px 0 16px}.progressbar i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--yellow));border-radius:99px;transition:width .25s}
 .task-board{background:var(--pink-soft);border-radius:23px;padding:15px}.task-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}.task{display:flex;align-items:center;gap:10px;background:#fffc;border-radius:14px;min-height:53px;padding:8px 11px;box-shadow:0 2px 0 #ffffffa6}
