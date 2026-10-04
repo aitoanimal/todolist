@@ -20,7 +20,7 @@ button,input{font:inherit}button{cursor:pointer}.app{width:min(100% - 24px,1200p
 h1{margin:5px 0;font-family:"Kiwi Maru",serif;font-size:clamp(28px,5vw,46px)}.hero p{margin:0;font-size:14px}.flower{position:absolute;right:10px;top:-3px;font-size:48px}
 .week-nav{display:flex;gap:8px;overflow:auto;padding:20px 0 4px}.day-tab{border:0;min-width:100px;padding:11px 13px;border-radius:16px;background:#fff;border:2px solid #f3dfd6;color:var(--ink);font-weight:700}
 .day-tab.active{background:var(--pink);color:#fff;border-color:var(--pink);box-shadow:0 3px 0 #df7795}.day-tab .small{display:block;font-size:11px;font-weight:500;opacity:.8;margin-top:3px}
-.function renderSummary(){document.getElementById('summary').innerHTML=dayNames.map((d,i)=>{let a=state.days[d],done=a.filter(x=>x.done).length;return `<div class="summary-card"><strong>${done}/${a.length}</strong><span>${d}</span></div>`}).join('')}
+.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0}.summary-card{background:#fff;border-radius:16px;padding:12px;text-align:center}.summary-card strong{display:block;font-size:20px}.summary-card span{font-size:11px;color:#927e76}
 .task-area{margin-top:22px}.day-title{display:flex;align-items:center;justify-content:space-between;gap:10px}.day-title h2{font-family:"Kiwi Maru",serif;font-size:25px;margin:0}.progress{font-size:12px;font-weight:700;color:#b49354}
 .progressbar{height:9px;background:#f2e5df;border-radius:99px;overflow:hidden;margin:10px 0 16px}.progressbar i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--yellow));border-radius:99px;transition:width .25s}
 .task-board{background:var(--pink-soft);border-radius:23px;padding:15px}.task-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}.task{display:flex;align-items:center;gap:10px;background:#fffc;border-radius:14px;min-height:53px;padding:8px 11px;box-shadow:0 2px 0 #ffffffa6}
@@ -40,7 +40,7 @@ h1{margin:5px 0;font-family:"Kiwi Maru",serif;font-size:clamp(28px,5vw,46px)}.he
 <main class="app">
 <header class="topbar"><div class="brand"><span class="brand-mark">✓</span><span>できた！5日間手帳</span></div><div class="week-label" id="weekLabel"></div></header>
 <section class="diary">
-<header class="hero"><div class="eyebrow">MONDAY → FRIDAY</div><h1>5日間のToDoスケジュール</h1><p>毎日の小さな「できた」を、ひとつずつ集めようね。</p><span class="flower">🌼</span></header>
+<header class="hero"><div class="eyebrow">MONDAY → FRIDAY</div><h1>5日間、いい一週間にしよう。</h1><p>毎日の小さな「できた」を、ひとつずつ集めようね。</p><span class="flower">🌼</span></header>
 <nav class="week-nav" id="dayTabs" aria-label="曜日選択"></nav>
 <section class="summary" id="summary"></section>
 <section class="task-area">
@@ -66,7 +66,7 @@ let selected=new Date().getDay(); selected=selected===0?0:selected===6?4:selecte
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function currentDay(){return dayNames[selected]}
 function renderTabs(){document.getElementById('dayTabs').innerHTML=dayNames.map((d,i)=>`<button class="day-tab ${i===selected?'active':''}" data-i="${i}">${dayShort[i]}曜日<span class="small">${state.days[d].filter(x=>x.done).length}/${state.days[d].length} 完了</span></button>`).join('')}
-
+function renderSummary(){document.getElementById('summary').innerHTML=dayNames.map((d,i)=>{let a=state.days[d],done=a.filter(x=>x.done).length;return `<div class="summary-card"><strong>${done}/${a.length}</strong><span>${d}</span></div>`}).join('')}
 function renderTasks(){let d=currentDay(),tasks=state.days[d],done=tasks.filter(x=>x.done).length,pct=tasks.length?Math.round(done/tasks.length*100):0;document.getElementById('dayTitle').textContent=d+'のToDo';document.getElementById('progressText').textContent=`${done}/${tasks.length} できた！`;document.getElementById('progressBar').style.width=pct+'%';document.getElementById('taskList').innerHTML=tasks.map(t=>`<li class="task"><label><input type="checkbox" data-id="${t.id}" ${t.done?'checked':''}><span class="task-text">${escapeHtml(t.text)}</span></label><button class="delete" data-del="${t.id}" aria-label="削除">×</button></li>`).join('')||'<li class="empty">この日のToDoはまだありません。追加してみよう 🌷</li>'}
 function renderWeek(){document.getElementById('weekView').innerHTML=dayNames.map(d=>{let tasks=state.days[d];return `<div class="mini-day"><h3>${d}</h3><div class="mini-count">${tasks.filter(x=>x.done).length}/${tasks.length} 完了</div><div class="mini-list">${tasks.slice(0,6).map(t=>`<div class="mini-item ${t.done?'done':''}">${escapeHtml(t.text)}</div>`).join('')||'<div class="empty">ToDoなし</div>'}</div></div>`}).join('')}
 function render(){let now=new Date(),m=now.getMonth()+1;document.getElementById('weekLabel').textContent=`${m}月・月〜金`;renderTabs();renderSummary();renderTasks();renderWeek()}
